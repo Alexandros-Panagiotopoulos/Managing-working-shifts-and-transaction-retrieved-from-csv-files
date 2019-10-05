@@ -42,7 +42,6 @@ def get_time_in_hours_from_midnight(time, time_position):
         shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
         return shift_start_in_hours_from_midnight
 
-
 def create_dict_with_keys_per_hour_from_9_to_23():
     shifts = dict()
     for hour in range(9,24):
@@ -54,7 +53,6 @@ def format_dictionary_keys(shifts):
         new_key = str(hour) + ":00"
         shifts[new_key] = shifts.pop(hour)
 
-
 def calculate_hourly_cost_of_shift(hour, start, end, rate):
     if int(start) == hour:
         cost = ((hour + 1) - start) * rate
@@ -64,10 +62,8 @@ def calculate_hourly_cost_of_shift(hour, start, end, rate):
         cost -= end - hour
     return cost
 
-
 def process_shifts(path_to_csv):
     """
-
     :param path_to_csv: The path to the work_shift.csv
     :type string:
     :return: A dictionary with time as key (string) with format %H:%M
@@ -106,7 +102,6 @@ def process_shifts(path_to_csv):
 
 def process_sales(path_to_csv):
     """
-
     :param path_to_csv: The path to the transactions.csv
     :type string:
     :return: A dictionary with time (string) with format %H:%M as key and
@@ -123,11 +118,18 @@ def process_sales(path_to_csv):
 
     :rtype dict:
     """
-    return None
+    sales = create_dict_with_keys_per_hour_from_9_to_23()  #Assume operating hours for the restorant from 9 to 11 pm
+    with open (path_to_csv) as sales_path:
+        reader = csv.reader(sales_path)
+        next(reader)    #skip the header
+        for sale in reader:
+            hour = int(sale[1][0:2])
+            sales[hour] += float(sale[0])
+    format_dictionary_keys(sales)
+    return sales
 
 def compute_percentage(shifts, sales):
     """
-
     :param shifts:
     :type shifts: dict
     :param sales:
@@ -167,6 +169,7 @@ def main(path_to_shifts, path_to_sales):
     shifts_processed = process_shifts(path_to_shifts)
     print(shifts_processed)
     sales_processed = process_sales(path_to_sales)
+    print(sales_processed)
     # percentages = compute_percentage(shifts_processed, sales_processed)
     # best_hour, worst_hour = best_and_worst_hour(percentages)
     return None, None #best_hour, worst_hour
