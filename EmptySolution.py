@@ -42,26 +42,30 @@ def get_time_in_hours_from_midnight(time, time_position):
         shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
         return shift_start_in_hours_from_midnight
 
-        
+
+def create_dict_with_keys_per_hour_from_9_to_23():
+    shifts = dict()
+    for hour in range(9,24):
+        shifts[hour] = 0
+    return shifts
+
+def format_dictionary_keys(shifts):
+    for hour in range(9,24):
+        new_key = str(hour) + ":00"
+        shifts[new_key] = shifts.pop(hour)
+
+
+def calculate_hourly_cost_of_shift(hour, start, end, rate):
+    if int(start) == hour:
+        cost = ((hour + 1) - start) * rate
+    else:
+        cost = rate
+    if int(end) == hour:
+        cost -= end - hour
+    return cost
+
 
 def process_shifts(path_to_csv):
-
-    with open (path_to_csv) as shifts_path:
-        reader = csv.reader(shifts_path)
-        header_row = next(reader)
-        
-        time_positions = [0, 1, 3]
-        for shift in reader:
-            for time_position in time_positions:
-                if time_position == 0:
-                    break_start, break_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
-                elif time_position == 1:
-                    shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
-                else:
-                    shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
-            print(break_start, break_end, shift_start, shift_end)
-                
-
     """
 
     :param path_to_csv: The path to the work_shift.csv
@@ -77,8 +81,28 @@ def process_shifts(path_to_csv):
     50 pounds
     :rtype dict:
     """
-    return None
-
+    shifts = create_dict_with_keys_per_hour_from_9_to_23()  #Assume operating hours for the restorant from 9 to 11 pm
+    with open (path_to_csv) as shifts_path:
+        reader = csv.reader(shifts_path)
+        next(reader)    #skip the header
+        time_positions = [0, 1, 3]
+        for shift in reader:
+            rate = float(shift[2])
+            for time_position in time_positions:
+                if time_position == 0:
+                    break_start, break_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                elif time_position == 1:
+                    shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                else:
+                    shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
+            for hour in shifts:
+                if shift_start <= hour <= shift_end:
+                    cost = calculate_hourly_cost_of_shift(hour, shift_start, shift_end, rate)
+                    if break_start <= hour <= break_end:
+                        cost -= calculate_hourly_cost_of_shift(hour, break_start, break_end, rate) #reduce the cost amount while on a break
+                    shifts[hour] += cost
+    format_dictionary_keys(shifts)
+    return shifts
 
 def process_sales(path_to_csv):
     """
@@ -141,6 +165,7 @@ def main(path_to_shifts, path_to_sales):
     """
 
     shifts_processed = process_shifts(path_to_shifts)
+    print(shifts_processed)
     sales_processed = process_sales(path_to_sales)
     # percentages = compute_percentage(shifts_processed, sales_processed)
     # best_hour, worst_hour = best_and_worst_hour(percentages)
