@@ -4,7 +4,21 @@ Please write you name here: Alexandros Panagiotopoulos
 
 import csv
 
+def get_time_in_hours(time):
+    return time
+
 def process_shifts(path_to_csv):
+
+    with open (path_to_csv) as shifts_path:
+        reader = csv.reader(shifts_path)
+        header_row = next(reader)
+        
+        time_positions = [0, 1, 3]
+        for shift in reader:
+            for time_position in time_positions:
+                time_in_hours = get_time_in_hours (shift[time_position])
+                print (time_in_hours)
+
     """
 
     :param path_to_csv: The path to the work_shift.csv
@@ -91,8 +105,8 @@ def main(path_to_shifts, path_to_sales):
 
 if __name__ == '__main__':
     # You can change this to test your code, it will not be used
-    path_to_sales = "transactions.csv"
-    path_to_shifts = "work_shifts.csv"
+    path_to_sales = "c:/Users/alex/code/python/Tenzo_coding_test/transactions.csv"
+    path_to_shifts = "c:/Users/alex/code/python/Tenzo_coding_test/work_shifts.csv"
     best_hour, worst_hour = main(path_to_shifts, path_to_sales)
 
 
