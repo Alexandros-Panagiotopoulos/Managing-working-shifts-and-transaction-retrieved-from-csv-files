@@ -162,8 +162,9 @@ def best_and_worst_hour(percentages):
     represented by string with format %H:%M
     e.g. ["18:00", "20:00"]
     """
-
-    return
+    best_hour = max(percentages, key=percentages.get)
+    worst_hour = min(percentages, key=percentages.get)
+    return best_hour, worst_hour
 
 def main(path_to_shifts, path_to_sales):
     """
@@ -177,8 +178,9 @@ def main(path_to_shifts, path_to_sales):
     print (sales_processed)
     percentages = compute_percentage(shifts_processed, sales_processed)
     print (percentages)
-    # best_hour, worst_hour = best_and_worst_hour(percentages)
-    return None, None #best_hour, worst_hour
+    best_hour, worst_hour = best_and_worst_hour(percentages)
+    print(best_hour, worst_hour)
+    return best_hour, worst_hour #best_hour, worst_hour
 
 if __name__ == '__main__':
     # You can change this to test your code, it will not be used
