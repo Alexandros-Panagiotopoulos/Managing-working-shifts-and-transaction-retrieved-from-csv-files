@@ -15,13 +15,13 @@ def clean_the_break_time_format(time_random_format):
 
 def format_time_in_hours_from_midnight(time_cleaned_format):
     time_temp_format = time_cleaned_format.replace('.', ':')
-    if ":" in time_temp_format:     #If minutes are contained in the time foramt
+    if ":" in time_temp_format:     #If minutes are contained in the time format
         time_temp_format_hours, time_temp_format_min = time_temp_format.split(":")
     else:
         time_temp_format_hours = time_temp_format
         time_temp_format_min = None
     time_format_hours = int(time_temp_format_hours)
-    if time_format_hours < 9:  #Assume that shift starts at 9 so any hour with lower value is at pm
+    if time_format_hours < 8:  #Assume that shift starts the earliest at 8 so any hour with lower value is at pm
         time_format_hours += 12
     if time_temp_format_min:
         time_temp_format_min = int(time_temp_format_min)
@@ -42,16 +42,20 @@ def get_time_in_hours_from_midnight(time, time_position):
         shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
         return shift_start_in_hours_from_midnight
 
-def create_dict_with_keys_per_hour_from_9_to_23():
-    shifts = dict()
-    for hour in range(9,24):
-        shifts[hour] = 0
-    return shifts
+def create_dict_with_keys_per_hour_in_operating_hours():
+    operating_hours = [9, 23]    #Assume operating hours for the restaurant from 9 to 23
+    # The above should have been in a higher level fanction but there are istruction not to change the main
+    dictionary = dict()
+    for hour in range(int(operating_hours[0]), int(operating_hours[1])):
+        dictionary[hour] = 0
+    return dictionary
 
-def format_dictionary_keys(shifts):
-    for hour in range(9,24):
+def format_dictionary_keys(dictionary):
+    formated_dictionary = dict()
+    for hour in dictionary:
         new_key = str(hour) + ":00"
-        shifts[new_key] = shifts.pop(hour)
+        formated_dictionary[new_key] = dictionary[hour]
+    return formated_dictionary
 
 def calculate_hourly_cost_of_shift(hour, start, end, rate):
     if int(start) == hour:
@@ -77,7 +81,8 @@ def process_shifts(path_to_csv):
     50 pounds
     :rtype dict:
     """
-    shifts = create_dict_with_keys_per_hour_from_9_to_23()  #Assume operating hours for the restorant from 9 to 11 pm
+    
+    shifts = create_dict_with_keys_per_hour_in_operating_hours() 
     with open (path_to_csv) as shifts_path:
         reader = csv.reader(shifts_path)
         next(reader)    #skip the header
@@ -97,7 +102,7 @@ def process_shifts(path_to_csv):
                     if int(break_start) <= hour <= break_end:
                         cost -= calculate_hourly_cost_of_shift(hour, break_start, break_end, rate) #reduce the cost amount while on a break
                     shifts[hour] += cost
-    format_dictionary_keys(shifts)
+    shifts = format_dictionary_keys(shifts)
     return shifts
 
 def process_sales(path_to_csv):
@@ -118,14 +123,14 @@ def process_sales(path_to_csv):
 
     :rtype dict:
     """
-    sales = create_dict_with_keys_per_hour_from_9_to_23()
+    sales = create_dict_with_keys_per_hour_in_operating_hours() 
     with open (path_to_csv) as sales_path:
         reader = csv.reader(sales_path)
         next(reader)    #skip the header
         for sale in reader:
             hour = int(sale[1][0:2])
             sales[hour] += float(sale[0])
-    format_dictionary_keys(sales)
+    sales = format_dictionary_keys(sales)
     return sales
 
 def compute_percentage(shifts, sales):
@@ -144,8 +149,8 @@ def compute_percentage(shifts, sales):
     }
     :rtype: dict
     """
-    percentages = create_dict_with_keys_per_hour_from_9_to_23()
-    format_dictionary_keys(percentages)
+    percentages = create_dict_with_keys_per_hour_in_operating_hours() 
+    percentages = format_dictionary_keys(percentages)
     for hour in percentages:
         if sales[hour] != 0:
             percentages[hour] = sales[hour] / shifts[hour]
