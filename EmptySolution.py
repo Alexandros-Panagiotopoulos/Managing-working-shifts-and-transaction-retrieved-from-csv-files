@@ -59,7 +59,7 @@ def calculate_hourly_cost_of_shift(hour, start, end, rate):
     else:
         cost = rate
     if int(end) == hour:
-        cost -= end - hour
+        cost -= ((hour + 1) - end) * rate
     return cost
 
 def process_shifts(path_to_csv):
@@ -92,9 +92,9 @@ def process_shifts(path_to_csv):
                 else:
                     shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
             for hour in shifts:
-                if shift_start <= hour <= shift_end:
+                if int(shift_start) <= hour <= shift_end:
                     cost = calculate_hourly_cost_of_shift(hour, shift_start, shift_end, rate)
-                    if break_start <= hour <= break_end:
+                    if int(break_start) <= hour <= break_end:
                         cost -= calculate_hourly_cost_of_shift(hour, break_start, break_end, rate) #reduce the cost amount while on a break
                     shifts[hour] += cost
     format_dictionary_keys(shifts)
@@ -173,12 +173,12 @@ def main(path_to_shifts, path_to_sales):
     """
 
     shifts_processed = process_shifts(path_to_shifts)
-    print (shifts_processed)
     sales_processed = process_sales(path_to_sales)
-    print (sales_processed)
     percentages = compute_percentage(shifts_processed, sales_processed)
-    print (percentages)
     best_hour, worst_hour = best_and_worst_hour(percentages)
+    print (shifts_processed)
+    print (sales_processed)
+    print (percentages)
     print(best_hour, worst_hour)
     return best_hour, worst_hour #best_hour, worst_hour
 
@@ -189,4 +189,4 @@ if __name__ == '__main__':
     best_hour, worst_hour = main(path_to_shifts, path_to_sales)
 
 
-# Please write you name here:
+# Please write you name here: Panagiotopoulos Alexandros
