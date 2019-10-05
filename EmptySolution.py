@@ -13,14 +13,36 @@ def clean_the_break_time_format(time_random_format):
     break_start_cleaned_format, break_end_cleaned_format = time_temp_format.split("-")
     return break_start_cleaned_format, break_end_cleaned_format
 
-def get_time_in_hours_from_midnight(time_random_format, time_position):
-    if time_position == 0: #Dealing with the break period
-        break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time_random_format)
-        print(break_start_cleaned_format, break_end_cleaned_format)
-        return break_start_cleaned_format, break_end_cleaned_format
-        
+def format_time_in_hours_from_midnight(time_cleaned_format):
+    time_temp_format = time_cleaned_format.replace('.', ':')
+    if ":" in time_temp_format:     #If minutes are contained in the time foramt
+        time_temp_format_hours, time_temp_format_min = time_temp_format.split(":")
+    else:
+        time_temp_format_hours = time_temp_format
+        time_temp_format_min = None
+    time_format_hours = int(time_temp_format_hours)
+    if time_format_hours < 9:  #Assume that shift starts at 9 so any hour with lower value is at pm
+        time_format_hours += 12
+    if time_temp_format_min:
+        time_temp_format_min = int(time_temp_format_min)
+        time_temp_format_min = time_temp_format_min / 60
+        time_format_hours += time_temp_format_min
+    return time_format_hours
 
-    
+def get_time_in_hours_from_midnight(time, time_position):
+    if time_position == 0: #Dealing with the break period
+        break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time)
+        break_start_in_hours_from_midnight = format_time_in_hours_from_midnight(break_start_cleaned_format)
+        break_end_in_hours_from_midnight = format_time_in_hours_from_midnight(break_end_cleaned_format)
+        return break_start_in_hours_from_midnight, break_end_in_hours_from_midnight
+    elif time_position == 1: #Dealing with the end of the shifts
+        shift_end_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        return shift_end_in_hours_from_midnight
+    else:   #Dealing with the start of the shifts
+        shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        return shift_start_in_hours_from_midnight
+
+        
 
 def process_shifts(path_to_csv):
 
@@ -37,6 +59,7 @@ def process_shifts(path_to_csv):
                     shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
                 else:
                     shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
+            print(break_start, break_end, shift_start, shift_end)
                 
 
     """
