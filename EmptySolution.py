@@ -118,7 +118,7 @@ def process_sales(path_to_csv):
 
     :rtype dict:
     """
-    sales = create_dict_with_keys_per_hour_from_9_to_23()  #Assume operating hours for the restorant from 9 to 11 pm
+    sales = create_dict_with_keys_per_hour_from_9_to_23()
     with open (path_to_csv) as sales_path:
         reader = csv.reader(sales_path)
         next(reader)    #skip the header
@@ -144,18 +144,23 @@ def compute_percentage(shifts, sales):
     }
     :rtype: dict
     """
-    return None
+    percentages = create_dict_with_keys_per_hour_from_9_to_23()
+    format_dictionary_keys(percentages)
+    for hour in percentages:
+        if sales[hour] != 0:
+            percentages[hour] = sales[hour] / shifts[hour]
+        else:
+            percentages [hour] = -shifts[hour]
+    return percentages
 
 def best_and_worst_hour(percentages):
     """
-
     Args:
     percentages: output of compute_percentage
     Return: list of strings, the first element should be the best hour,
     the second (and last) element should be the worst hour. Hour are
     represented by string with format %H:%M
     e.g. ["18:00", "20:00"]
-
     """
 
     return
@@ -167,10 +172,11 @@ def main(path_to_shifts, path_to_sales):
     """
 
     shifts_processed = process_shifts(path_to_shifts)
-    print(shifts_processed)
+    print (shifts_processed)
     sales_processed = process_sales(path_to_sales)
-    print(sales_processed)
-    # percentages = compute_percentage(shifts_processed, sales_processed)
+    print (sales_processed)
+    percentages = compute_percentage(shifts_processed, sales_processed)
+    print (percentages)
     # best_hour, worst_hour = best_and_worst_hour(percentages)
     return None, None #best_hour, worst_hour
 
