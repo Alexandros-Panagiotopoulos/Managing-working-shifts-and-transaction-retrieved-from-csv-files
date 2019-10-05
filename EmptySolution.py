@@ -4,8 +4,23 @@ Please write you name here: Alexandros Panagiotopoulos
 
 import csv
 
-def get_time_in_hours(time):
-    return time
+def clean_the_break_time_format(time_random_format):
+    time_temp_format = time_random_format.replace('PM', '')
+    time_temp_format = time_temp_format.replace('pm', '')
+    time_temp_format = time_temp_format.replace('AM', '')
+    time_temp_format = time_temp_format.replace('am', '')
+    time_temp_format = time_temp_format.replace(' ', '')
+    break_start_cleaned_format, break_end_cleaned_format = time_temp_format.split("-")
+    return break_start_cleaned_format, break_end_cleaned_format
+
+def get_time_in_hours_from_midnight(time_random_format, time_position):
+    if time_position == 0: #Dealing with the break period
+        break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time_random_format)
+        print(break_start_cleaned_format, break_end_cleaned_format)
+        return break_start_cleaned_format, break_end_cleaned_format
+        
+
+    
 
 def process_shifts(path_to_csv):
 
@@ -16,8 +31,13 @@ def process_shifts(path_to_csv):
         time_positions = [0, 1, 3]
         for shift in reader:
             for time_position in time_positions:
-                time_in_hours = get_time_in_hours (shift[time_position])
-                print (time_in_hours)
+                if time_position == 0:
+                    break_start, break_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                elif time_position == 1:
+                    shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                else:
+                    shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                
 
     """
 
