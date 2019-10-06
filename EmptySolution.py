@@ -16,6 +16,7 @@ class InvalidTimeValueException(Error):
    """Raised when the imported times are invalid, like shifts outside operating hours or break outside the shift"""
    pass
 
+
 def clean_the_break_time_format(time_random_format):
     time_temp_format = time_random_format.replace('PM', '')
     time_temp_format = time_temp_format.replace('pm', '')
@@ -97,8 +98,6 @@ def check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_en
         break_start >  break_end):
         raise InvalidTimeValueException ("Please make sure shifts periods are inside operating hours and break periods inside\
                              shifts periods. Also in high PM hours please use 24 hour format like '22:10'")
-
-
 
 def process_shifts(path_to_csv):
     """
@@ -225,8 +224,8 @@ def main(path_to_shifts, path_to_sales):
 
 if __name__ == '__main__':
     # You can change this to test your code, it will not be used
-    path_to_sales = "c:/Users/alex/code/python/Tenzo_coding_test/transactions.csv"
-    path_to_shifts = "c:/Users/alex/code/python/Tenzo_coding_test/work_shifts.csv"
+    path_to_sales = "transactions.csv"
+    path_to_shifts = "work_shifts.csv"
     best_hour, worst_hour = main(path_to_shifts, path_to_sales)
 
 # Please write you name here: Panagiotopoulos Alexandros
