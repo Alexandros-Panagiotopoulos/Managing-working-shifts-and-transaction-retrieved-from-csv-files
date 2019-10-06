@@ -216,10 +216,10 @@ def main(path_to_shifts, path_to_sales):
     sales_processed = process_sales(path_to_sales)
     percentages = compute_percentage(shifts_processed, sales_processed)
     best_hour, worst_hour = best_and_worst_hour(percentages)
-    print (shifts_processed)
-    print (sales_processed)
-    print (percentages)
-    print(best_hour, worst_hour)
+    # print (shifts_processed)
+    # print (sales_processed)
+    # print (percentages)
+    # print(best_hour, worst_hour)
     return best_hour, worst_hour #best_hour, worst_hour
 
 if __name__ == '__main__':
