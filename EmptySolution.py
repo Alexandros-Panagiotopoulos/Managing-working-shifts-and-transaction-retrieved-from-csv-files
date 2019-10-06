@@ -4,6 +4,18 @@ Please write you name here: Alexandros Panagiotopoulos
 
 import csv
 
+class Error(Exception):
+   """Base class for other exceptions"""
+   pass
+
+class InvalidTimeStampFormating(Error):
+   """Raised when the time stamps are in unexpected format"""
+   pass
+
+class InvalidTimeValueException(Error):
+   """Raised when the imported times are invalid, like shifts outside operating hours or break outside the shift"""
+   pass
+
 def clean_the_break_time_format(time_random_format):
     time_temp_format = time_random_format.replace('PM', '')
     time_temp_format = time_temp_format.replace('pm', '')
@@ -31,20 +43,30 @@ def format_time_in_hours_from_midnight(time_cleaned_format):
 
 def get_time_in_hours_from_midnight(time, time_position):
     if time_position == 0: #Dealing with the break period
-        break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time)
-        break_start_in_hours_from_midnight = format_time_in_hours_from_midnight(break_start_cleaned_format)
-        break_end_in_hours_from_midnight = format_time_in_hours_from_midnight(break_end_cleaned_format)
+        try:
+            break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time)
+        except:
+            raise InvalidTimeStampFormating("Please separate the start and end of the break with a '-'")
+        try:
+            break_start_in_hours_from_midnight = format_time_in_hours_from_midnight(break_start_cleaned_format)
+            break_end_in_hours_from_midnight = format_time_in_hours_from_midnight(break_end_cleaned_format)
+        except:
+            raise InvalidTimeStampFormating("An unexpected format at a break time stamp was recieved, please avoid any special character or letter except from '.',':' and 'pm'")
         return break_start_in_hours_from_midnight, break_end_in_hours_from_midnight
     elif time_position == 1: #Dealing with the end of the shifts
-        shift_end_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        try:
+            shift_end_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        except:
+            raise InvalidTimeStampFormating("An unexpected format at the end of a shift was recieved, please use format like '22:16'")
         return shift_end_in_hours_from_midnight
     else:   #Dealing with the start of the shifts
-        shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        try:
+            shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
+        except:
+            raise InvalidTimeStampFormating("An unexpected format at the beginning of a shift was recieved, please use format like '13:12'")
         return shift_start_in_hours_from_midnight
 
-def create_dict_with_keys_per_hour_in_operating_hours():
-    operating_hours = [9, 23]    #Assume operating hours for the restaurant from 9 to 23
-    # The above should have been in a higher level fanction but there are istruction not to change the main
+def create_dict_with_keys_per_hour_in_operating_hours(operating_hours = [9,23]):
     dictionary = dict()
     for hour in range(int(operating_hours[0]), int(operating_hours[1])):
         dictionary[hour] = 0
@@ -66,6 +88,18 @@ def calculate_hourly_cost_of_shift(hour, start, end, rate):
         cost -= ((hour + 1) - end) * rate
     return cost
 
+def check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours):
+    if (shift_start < operating_hours[0] or
+        shift_end > operating_hours[1] or
+        shift_start > shift_end or
+        break_start < shift_start or
+        break_end > shift_end or
+        break_start >  break_end):
+        raise InvalidTimeValueException ("Please make sure shifts periods are inside operating hours and break periods inside\
+                             shifts periods. Also in high PM hours please use 24 hour format like '22:10'")
+
+
+
 def process_shifts(path_to_csv):
     """
     :param path_to_csv: The path to the work_shift.csv
@@ -81,8 +115,9 @@ def process_shifts(path_to_csv):
     50 pounds
     :rtype dict:
     """
-    
-    shifts = create_dict_with_keys_per_hour_in_operating_hours() 
+    operating_hours = [9, 23]    #Assume operating hours for the restaurant from 9 to 23
+    # The above should have been in a higher level fanction but there are istruction not to change the main
+    shifts = create_dict_with_keys_per_hour_in_operating_hours(operating_hours) 
     with open (path_to_csv) as shifts_path:
         reader = csv.reader(shifts_path)
         next(reader)    #skip the header
@@ -96,6 +131,7 @@ def process_shifts(path_to_csv):
                     shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
                 else:
                     shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
+            check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours)
             for hour in shifts:
                 if int(shift_start) <= hour <= shift_end:
                     cost = calculate_hourly_cost_of_shift(hour, shift_start, shift_end, rate)
@@ -192,6 +228,5 @@ if __name__ == '__main__':
     path_to_sales = "c:/Users/alex/code/python/Tenzo_coding_test/transactions.csv"
     path_to_shifts = "c:/Users/alex/code/python/Tenzo_coding_test/work_shifts.csv"
     best_hour, worst_hour = main(path_to_shifts, path_to_sales)
-
 
 # Please write you name here: Panagiotopoulos Alexandros
