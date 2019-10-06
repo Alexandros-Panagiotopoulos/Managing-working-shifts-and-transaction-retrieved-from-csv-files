@@ -53,7 +53,7 @@ class SolutionTestCase(unittest.TestCase):
         sales = process_sales("unittest_transactions.csv")
         sales_check = ({'9:00': 0, '10:00': 130.88, '11:00': 300.65, '12:00': 0, '13:00': 0, '14:00': 0, '15:00': 0,
          '16:00': 0, '17:00': 0, '18:00': 0, '19:00': 0, '20:00': 0, '21:00': 0, '22:00': 0})
-        print (sales)
+
         self.assertEqual(sales, sales_check)
 
 #Many more tests should be included but ommited as they considered beyond the scope of current test
