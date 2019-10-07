@@ -219,7 +219,7 @@ def main(path_to_shifts, path_to_sales):
     # print (shifts_processed)
     # print (sales_processed)
     # print (percentages)
-    print(best_hour, worst_hour)
+    # print(best_hour, worst_hour)
     return best_hour, worst_hour #best_hour, worst_hour
 
 if __name__ == '__main__':
