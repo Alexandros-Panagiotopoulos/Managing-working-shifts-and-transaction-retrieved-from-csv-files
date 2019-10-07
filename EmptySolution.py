@@ -42,29 +42,29 @@ def format_time_in_hours_from_midnight(time_cleaned_format):
         time_format_hours += time_temp_format_min
     return time_format_hours
 
-def get_time_in_hours_from_midnight(time, time_position):
+def get_time_in_hours_from_midnight(time, time_position, line):
     if time_position == 0: #Dealing with the break period
         try:
             break_start_cleaned_format, break_end_cleaned_format = clean_the_break_time_format(time)
         except:
-            raise InvalidTimeStampFormating("Please separate the start and end of the break with a '-'")
+            raise InvalidTimeStampFormating("Invalid entry in line "+str(line+1) +" of 'shifts.csv. Please separate the start and end of the break with a '-'")
         try:
             break_start_in_hours_from_midnight = format_time_in_hours_from_midnight(break_start_cleaned_format)
             break_end_in_hours_from_midnight = format_time_in_hours_from_midnight(break_end_cleaned_format)
         except:
-            raise InvalidTimeStampFormating("An unexpected format at a break time stamp was recieved, please avoid any special character or letter except from '.',':' and 'pm'")
+            raise InvalidTimeStampFormating("Invalid entry in line "+str(line+1) +" of 'shifts.csv. An unexpected format at a break time stamp was recieved, please avoid any special character or letter except from '.',':' and 'pm'")
         return break_start_in_hours_from_midnight, break_end_in_hours_from_midnight
     elif time_position == 1: #Dealing with the end of the shifts
         try:
             shift_end_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
         except:
-            raise InvalidTimeStampFormating("An unexpected format at the end of a shift was recieved, please use format like '22:16'")
+            raise InvalidTimeStampFormating("Invalid entry in line "+str(line+1) +" of 'shifts.csv. An unexpected format at the end of a shift was recieved, please use format like '22:16'")
         return shift_end_in_hours_from_midnight
     else:   #Dealing with the start of the shifts
         try:
             shift_start_in_hours_from_midnight = format_time_in_hours_from_midnight(time)
         except:
-            raise InvalidTimeStampFormating("An unexpected format at the beginning of a shift was recieved, please use format like '13:12'")
+            raise InvalidTimeStampFormating("Invalid entry in line "+str(line+1) +" of 'shifts.csv. An unexpected format at the beginning of a shift was recieved, please use format like '13:12'")
         return shift_start_in_hours_from_midnight
 
 def create_dict_with_keys_per_hour_in_operating_hours(operating_hours = [9,23]):
@@ -89,14 +89,14 @@ def calculate_hourly_cost_of_shift(hour, start, end, rate):
         cost -= ((hour + 1) - end) * rate
     return cost
 
-def check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours):
+def check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours, line):
     if (shift_start < operating_hours[0] or
         shift_end > operating_hours[1] or
         shift_start > shift_end or
         break_start < shift_start or
         break_end > shift_end or
         break_start >  break_end):
-        raise InvalidTimeValueException ("Please make sure shifts periods are inside operating hours and break periods inside\
+        raise InvalidTimeValueException ("Invalid entry in line "+str(line+1) +" of 'shifts.csv. Please make sure shifts periods are inside operating hours and break periods inside\
                              shifts periods. Also in high PM hours please use 24 hour format like '22:10'")
 
 def process_shifts(path_to_csv):
@@ -115,22 +115,22 @@ def process_shifts(path_to_csv):
     :rtype dict:
     """
     operating_hours = [9, 23]    #Assume operating hours for the restaurant from 9 to 23
-    # The above should have been in a higher level fanction but there are istruction not to change the main
+    # The above should have been in a higher level function but there are istruction not to change the main
     shifts = create_dict_with_keys_per_hour_in_operating_hours(operating_hours) 
     with open (path_to_csv) as shifts_path:
         reader = csv.reader(shifts_path)
         next(reader)    #skip the header
         time_positions = [0, 1, 3]
-        for shift in reader:
+        for line, shift in enumerate(reader):
             rate = float(shift[2])
             for time_position in time_positions:
                 if time_position == 0:
-                    break_start, break_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                    break_start, break_end = get_time_in_hours_from_midnight(shift[time_position], time_position, line)
                 elif time_position == 1:
-                    shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position)
+                    shift_end = get_time_in_hours_from_midnight(shift[time_position], time_position, line)
                 else:
-                    shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position)
-            check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours)
+                    shift_start = get_time_in_hours_from_midnight(shift[time_position], time_position, line)
+            check_if_time_stamps_are_valid(shift_start, shift_end, break_start, break_end, operating_hours, line)
             for hour in shifts:
                 if int(shift_start) <= hour <= shift_end:
                     cost = calculate_hourly_cost_of_shift(hour, shift_start, shift_end, rate)
@@ -219,7 +219,7 @@ def main(path_to_shifts, path_to_sales):
     # print (shifts_processed)
     # print (sales_processed)
     # print (percentages)
-    # print(best_hour, worst_hour)
+    print(best_hour, worst_hour)
     return best_hour, worst_hour #best_hour, worst_hour
 
 if __name__ == '__main__':
